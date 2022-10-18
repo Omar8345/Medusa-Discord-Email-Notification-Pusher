@@ -109,7 +109,15 @@ async def email(interaction: discord.Interaction, order_id: str, *, email_subjec
             embed.set_footer(text=f'Requseted by {user}', icon_url=avatar_url)
             await interaction.response.send_message(embed=embed)
             return
-        
+        embed = discord.Embed(
+            title='Email sent :white_check_mark:',
+            description=f'An email will be sent to `{customer_email}` shortly',
+            color=0x2ecc71,
+            timestamp=datetime.datetime.utcnow()
+        )
+        embed.set_thumbnail(url='https://i.imgur.com/yFkhOEx.jpg')
+        embed.set_footer(text=f'Requseted by {user}', icon_url=avatar_url)
+        await interaction.response.send_message(embed=embed)
         try:
             message = 'Subject: {}\n\n{}'.format(email_subject, email_body)
             server.sendmail(email_address, customer_email, message)  
@@ -125,15 +133,7 @@ async def email(interaction: discord.Interaction, order_id: str, *, email_subjec
             embed.set_footer(text=f'Requseted by {user}', icon_url=avatar_url)
             await interaction.response.send_message(embed=embed)
             return
-        embed = discord.Embed(
-            title='Email sent :white_check_mark:',
-            description=f'An email has been sent to `{customer_email}`',
-            color=0x2ecc71,
-            timestamp=datetime.datetime.utcnow()
-        )
-        embed.set_thumbnail(url='https://i.imgur.com/yFkhOEx.jpg')
-        embed.set_footer(text=f'Requseted by {user}', icon_url=avatar_url)
-        await interaction.response.send_message(embed=embed)
+
         server.quit()
         
 # On command (/coolemail)
@@ -157,12 +157,6 @@ async def coolemail(interaction: discord.Interaction, order_id: str, email_subje
         res = r.json()
         customer_email = res['order']['customer']['email']
         customer_first_name = res['order']['customer']['first_name']
-        embed = discord.Embed(
-            title='Email sent :white_check_mark:',
-            description=f'An email has been sent to `{customer_email}`',
-            color=0x2ecc71,
-            timestamp=datetime.datetime.utcnow()
-        )
         embed.set_thumbnail(url='https://i.imgur.com/yFkhOEx.jpg')
         embed.set_footer(text=f'Requseted by {user}', icon_url=avatar_url)
         await interaction.response.send_message(embed=embed)
@@ -175,9 +169,32 @@ async def coolemail(interaction: discord.Interaction, order_id: str, email_subje
         html_message = open('template.html').read()
         html_message = html_message.replace('{first_name}', customer_first_name).replace('{email_headline}', email_headline).replace('{email_body}', email_body)
         msg.add_alternative(html_message, subtype='html')
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        server.login(email_address, email_password)
+        try:
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                server.starttls()
+                server.login(email_address, email_password)
+                server.send_message(msg)
+        except Exception as e:
+            print(e)
+            embed = discord.Embed(
+                title='Error :x:',
+                description='An error occured while trying to send the email',
+                color=0xe74c3c,
+                timestamp=datetime.datetime.utcnow()
+            )
+            embed.set_thumbnail(url='https://i.imgur.com/yFkhOEx.jpg')
+            embed.set_footer(text=f'Requseted by {user}', icon_url=avatar_url)
+            await interaction.response.send_message(embed=embed)
+            return
+        embed = discord.Embed(
+            title='Email sent :white_check_mark:',
+            description=f'An email will been sent to `{customer_email}` shortly',
+            color=0x2ecc71,
+            timestamp=datetime.datetime.utcnow()
+        )
+        embed.set_thumbnail(url='https://i.imgur.com/yFkhOEx.jpg')
+        embed.set_footer(text=f'Requseted by {user}', icon_url=avatar_url)
+        await interaction.response.send_message(embed=embed)
         server.send_message(msg)
         server.quit()
         
