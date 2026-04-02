@@ -13,5 +13,5 @@ multidict==6.1.0
 propcache==0.2.1
 python-dotenv==1.0.1
 requests==2.32.4
-urllib3==2.5.0
+urllib3==2.6.3
 yarl==1.18.3
